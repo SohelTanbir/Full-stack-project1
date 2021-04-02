@@ -5,7 +5,6 @@ const bodyParser = require('body-parser');
 const app = express();
 const user = 'mobileHoueUser';
 const pass = 'mobilehouse';
-
 app.use(cors());
 app.use(bodyParser.json())
 
@@ -15,13 +14,13 @@ const { ObjectId } = require('bson');
 const uri = "mongodb+srv://mobileHoueUser:mobilehouse@cluster0.kjddt.mongodb.net/mobile-house?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect(err => {
-  const DatabaseCollection = client.db("mobile-house").collection("orders");
-  const NewAddProduct = client.db("mobile-house").collection("mobiles");
-
+  const ordersCollection = client.db("mobile-house").collection("orders");
+  const AddProduct = client.db("mobile-house").collection("mobiles");
+    
     // add new product into database
     app.post('/addproduct', (req, res)=>{
         const product = req.body;
-        NewAddProduct.insertOne(product)
+        AddProduct.insertOne(product)
         .then(result =>{
             res.send(result.insertedCount >0)
         })
@@ -29,22 +28,16 @@ client.connect(err => {
 
     // read data from database
     app.get('/mobiles', (req, res)=>{
-        NewAddProduct.find({})
+        AddProduct.find({})
         .toArray((error, results)=>{
             res.send(results)
         })
     })
-    // app.get('/checkout', (req, res)=>{
-    //     NewAddProduct.find({_id:ObjectId, '60662ae7786a1f0048aba74b'})
-    //     .toArray((error, results)=>{
-    //         res.send(results)
-    //     })
-    // })
-
-     // products details
+ 
+     // read checkout product from database
      app.get('/mobile/:id', (req, res)=>{
         const pid = req.params.id;
-        NewAddProduct.find({_id:ObjectId(req.params.id)})
+        AddProduct.find({_id:ObjectId(req.params.id)})
         .toArray((err, documents)=>{
             res.send(documents[0])
         })
@@ -53,13 +46,28 @@ client.connect(err => {
     // order store in database
     app.post('/placeOrder', (req, res)=>{
         const order = req.body;
-        DatabaseCollection.insertOne(order)
+        ordersCollection.insertOne(order)
         .then(result=>{
             if(result.insertedCount > 0){
                 res.send(result.insertedCount > 0)
             }
         })
     })
+    // read customer order from database for UI view
+    app.get('/orders', (req, res)=>{
+        ordersCollection.find({})
+        .toArray((error, documents)=>{
+            res.send(documents)
+        })
+    });
+      // delete data from database
+      app.delete('/delete/:id', (req, res)=>{
+        AddProduct.deleteOne({_id: ObjectId(req.params.id)})
+        .then(result =>{
+            res.send(result)
+        })
+    })
+
 
 });
 
