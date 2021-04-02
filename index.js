@@ -11,6 +11,7 @@ app.use(bodyParser.json())
 
 // database connection 
 const MongoClient = require('mongodb').MongoClient;
+const { ObjectId } = require('bson');
 const uri = "mongodb+srv://mobileHoueUser:mobilehouse@cluster0.kjddt.mongodb.net/mobile-house?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect(err => {
@@ -33,13 +34,21 @@ client.connect(err => {
             res.send(results)
         })
     })
-    app.get('/checkout', (req, res)=>{
-        NewAddProduct.find({_id:'60662ae7786a1f0048aba74b'})
-        .toArray((error, results)=>{
-            res.send(results)
-        })
-    })
+    // app.get('/checkout', (req, res)=>{
+    //     NewAddProduct.find({_id:ObjectId, '60662ae7786a1f0048aba74b'})
+    //     .toArray((error, results)=>{
+    //         res.send(results)
+    //     })
+    // })
 
+     // products details
+     app.get('/mobile/:id', (req, res)=>{
+        const pid = req.params.id;
+        NewAddProduct.find({_id:ObjectId(req.params.id)})
+        .toArray((err, documents)=>{
+            res.send(documents[0])
+        })
+    });
 
     // order store in database
     app.post('/placeOrder', (req, res)=>{
