@@ -59,4 +59,4 @@ app.get('/', (req, res)=>{
     res.send('Welcome to E-commerce website development')
 })
 
-app.listen(5000)
+app.listen(process.env.PORT || 5000)
