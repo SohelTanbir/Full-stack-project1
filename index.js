@@ -7,6 +7,7 @@ const user = 'mobileHoueUser';
 const pass = 'mobilehouse';
 app.use(cors());
 app.use(bodyParser.json())
+require('dotenv').config();
 
 // database connection 
 const MongoClient = require('mongodb').MongoClient;
@@ -15,12 +16,12 @@ const uri = "mongodb+srv://mobileHoueUser:mobilehouse@cluster0.kjddt.mongodb.net
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect(err => {
   const ordersCollection = client.db("mobile-house").collection("orders");
-  const AddProduct = client.db("mobile-house").collection("mobiles");
-    
+  const allProducts = client.db("mobile-house").collection("mobiles");
+   
     // add new product into database
     app.post('/addproduct', (req, res)=>{
         const product = req.body;
-        AddProduct.insertOne(product)
+        allProducts.insertOne(product)
         .then(result =>{
             res.send(result.insertedCount >0)
         })
@@ -28,7 +29,7 @@ client.connect(err => {
 
     // read data from database
     app.get('/mobiles', (req, res)=>{
-        AddProduct.find({})
+        allProducts.find({})
         .toArray((error, results)=>{
             res.send(results)
         })
@@ -37,7 +38,7 @@ client.connect(err => {
      // read checkout product from database
      app.get('/mobile/:id', (req, res)=>{
         const pid = req.params.id;
-        AddProduct.find({_id:ObjectId(req.params.id)})
+        allProducts.find({_id:ObjectId(req.params.id)})
         .toArray((err, documents)=>{
             res.send(documents[0])
         })
@@ -55,16 +56,16 @@ client.connect(err => {
     })
     // read customer order from database for UI view
     app.get('/orders', (req, res)=>{
-        ordersCollection.find({})
+        ordersCollection.find({email:req.query.email})
         .toArray((error, documents)=>{
             res.send(documents)
         })
     });
-      // delete data from database
-      app.delete('/delete/:id', (req, res)=>{
-        AddProduct.deleteOne({_id: ObjectId(req.params.id)})
+  
+    app.delete('/delete/:id', (req, res)=>{
+        allProducts.deleteOne({_id:ObjectId(req.params.id)})
         .then(result =>{
-            res.send(result)
+            res.send( result.deletedCount > 0)
         })
     })
 
